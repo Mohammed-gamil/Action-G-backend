@@ -14,29 +14,84 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        $perPage = (int) $request->get('per_page', 20);
-        $page = (int) $request->get('page', 1);
+        $perPage = (int) $request->get('per_page', 50);
+        $unreadOnly = $request->boolean('unread_only', false);
 
         // Fetch from notifications table (default Laravel notifications schema)
         $query = DB::table('notifications')
             ->where('notifiable_type', get_class($user))
             ->where('notifiable_id', $user->getKey())
+            ->when($unreadOnly, function ($q) {
+                return $q->whereNull('read_at');
+            })
             ->orderByDesc('created_at');
 
-        $total = (clone $query)->count();
-        $items = $query->forPage($page, $perPage)->get();
+        $notifications = $query->paginate($perPage);
+
+        // Transform to match frontend format
+        $items = collect($notifications->items())->map(function ($notification) {
+            $data = json_decode($notification->data, true);
+            
+            return [
+                'id' => $notification->id,
+                'title' => $this->getNotificationTitle($notification->type),
+                'message' => $data['message'] ?? '',
+                'type' => $this->getNotificationType($notification->type),
+                'read' => $notification->read_at !== null,
+                'created_at' => $notification->created_at,
+                'related_request_id' => $data['request_id'] ?? null,
+                'action_url' => $data['action_url'] ?? null,
+            ];
+        });
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'items' => $items,
+            'data' => $items,
+            'meta' => [
                 'pagination' => [
-                    'total' => $total,
-                    'page' => $page,
-                    'per_page' => $perPage,
+                    'total' => $notifications->total(),
+                    'page' => $notifications->currentPage(),
+                    'per_page' => $notifications->perPage(),
+                    'totalPages' => $notifications->lastPage(),
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Get notification title based on type
+     */
+    private function getNotificationTitle(string $type): string
+    {
+        return match($type) {
+            'request_submitted' => 'New Request Submitted',
+            'request_assigned' => 'Request Assigned',
+            'request_approved' => 'Request Approved',
+            'request_rejected' => 'Request Rejected',
+            'request_pending_approval' => 'Pending Approval',
+            'request_pending_payment' => 'Pending Payment',
+            'quote_uploaded' => 'Quote Uploaded',
+            'quote_selected' => 'Quote Selected',
+            'funds_transferred' => 'Funds Transferred',
+            'project_started' => 'Project Started',
+            'project_done' => 'Project Completed',
+            'payment_confirmed' => 'Payment Confirmed',
+            'comment_added' => 'New Comment',
+            default => 'Notification',
+        };
+    }
+
+    /**
+     * Get notification type (UI style) based on Laravel notification type
+     */
+    private function getNotificationType(string $type): string
+    {
+        return match($type) {
+            'request_approved', 'funds_transferred', 'payment_confirmed' => 'success',
+            'request_rejected' => 'error',
+            'request_pending_approval', 'request_pending_payment', 'quote_uploaded' => 'warning',
+            default => 'info',
+        };
     }
 
     public function unreadCount(): JsonResponse
@@ -51,7 +106,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [ 'unread' => $count ],
+            'data' => [ 'count' => $count ],
         ]);
     }
 

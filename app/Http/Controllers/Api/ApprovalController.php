@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Request;
 use App\Models\Approval;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -177,7 +178,8 @@ class ApprovalController extends Controller
 
             DB::commit();
 
-            // TODO: Send notifications
+            // Send notifications
+            NotificationService::requestApproved($locked, $user, $this->getApprovalStage($user->role));
 
             return response()->json([
                 'success' => true,
@@ -227,7 +229,10 @@ class ApprovalController extends Controller
 
         $req->update(['state' => 'DONE']);
 
-    return response()->json(['success' => true, 'message' => 'Project marked as done', 'data' => $req->fresh(['requester', 'directManager'])]);
+        // Send notifications
+        NotificationService::projectMarkedDone($req);
+
+        return response()->json(['success' => true, 'message' => 'Project marked as done', 'data' => $req->fresh(['requester', 'directManager'])]);
     }
 
     /**
@@ -265,7 +270,10 @@ class ApprovalController extends Controller
             'payout_reference' => $httpRequest->get('payout_reference')
         ]);
 
-    return response()->json(['success' => true, 'message' => 'Payment confirmed', 'data' => $req->fresh(['requester', 'directManager'])]);
+        // Send notifications
+        NotificationService::clientPaymentConfirmed($req);
+
+        return response()->json(['success' => true, 'message' => 'Payment confirmed', 'data' => $req->fresh(['requester', 'directManager'])]);
     }
 
     /**
@@ -380,6 +388,9 @@ class ApprovalController extends Controller
 
             DB::commit();
 
+            // Send notifications
+            NotificationService::requestRejected($locked, $user, $httpRequest->comment);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Request rejected successfully',
@@ -459,7 +470,8 @@ class ApprovalController extends Controller
             'funds_transferred_at' => now()
         ]);
 
-        // TODO: Send notifications
+        // Send notifications
+        NotificationService::fundsTransferred($request, $httpRequest->payout_reference);
 
         return response()->json([
             'success' => true,
@@ -582,6 +594,12 @@ class ApprovalController extends Controller
 
         $req->selected_quote_id = $selectedId;
         $req->save();
+
+        // Send notifications
+        $selectedQuote = $req->quotes->firstWhere('id', $selectedId);
+        if ($selectedQuote) {
+            NotificationService::quoteSelected($req, $selectedQuote->vendor_name, $selectedQuote->quote_total);
+        }
 
         return response()->json([
             'success' => true,

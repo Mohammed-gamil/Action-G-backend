@@ -59,8 +59,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::group(['prefix' => 'notifications'], function () {
         Route::get('/', [NotificationController::class, 'index']);
         Route::get('unread-count', [NotificationController::class, 'unreadCount']);
-        Route::post('mark-all-read', [NotificationController::class, 'markAllAsRead']);
-        Route::post('{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::put('read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::put('{id}/read', [NotificationController::class, 'markAsRead']);
         Route::delete('{id}', [NotificationController::class, 'destroy']);
     });
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Request;
+use App\Services\NotificationService;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -63,6 +64,9 @@ class CommentController extends Controller
             'user_id' => $user->id,
             'content' => $httpRequest->get('content'),
         ]);
+
+        // Send notifications
+        NotificationService::commentAdded($req, $user, $httpRequest->get('content'));
 
         return response()->json(['success' => true, 'message' => 'Comment added', 'data' => $comment->load('user')], 201);
     }

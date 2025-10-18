@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Request;
 use App\Models\RequestItem;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -206,6 +207,11 @@ class RequestController extends Controller
 
             $newRequest->load(['requester', 'currentApprover', 'directManager', 'items', 'approvals', 'inventoryItems.inventoryItem']);
 
+            // Send notifications if request was submitted immediately
+            if ($request->get('submit_immediately', true)) {
+                NotificationService::requestSubmitted($newRequest);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Request created successfully',
@@ -342,6 +348,9 @@ class RequestController extends Controller
             'current_approver_id' => null,
         ]);
 
+        // Send notifications
+        NotificationService::requestSubmitted($request);
+
         return response()->json([
             'success' => true,
             'message' => 'Request submitted for approval',
@@ -405,7 +414,7 @@ class RequestController extends Controller
         try {
             DB::beginTransaction();
 
-            \App\Models\RequestQuote::create([
+            $quote = \App\Models\RequestQuote::create([
                 'request_id' => $pr->id,
                 'vendor_name' => $request->input('vendor_name'),
                 'quote_total' => $request->input('quote_total'),
@@ -415,6 +424,9 @@ class RequestController extends Controller
             ]);
 
             DB::commit();
+
+            // Send notifications
+            NotificationService::quoteUploaded($pr, $quote->vendor_name, $quote->quote_total);
 
             $pr->load(['quotes', 'selectedQuote']);
 
