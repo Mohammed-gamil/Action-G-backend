@@ -227,6 +227,20 @@ class ApprovalController extends Controller
             return response()->json(['success' => false, 'error' => ['code' => 409, 'message' => 'Project not in processing state']], 409);
         }
 
+        // CRITICAL FIX: Allocate reserved inventory (remove from stock) when project is done
+        $inventoryItems = $req->inventoryItems()->with('inventoryItem')->get();
+        foreach ($inventoryItems as $reqInvItem) {
+            $invItem = $reqInvItem->inventoryItem;
+            if ($invItem) {
+                $allocated = $invItem->allocate($reqInvItem->quantity_requested, $req->id, $user->id);
+                if ($allocated) {
+                    \Log::info("Allocated {$reqInvItem->quantity_requested} units of {$invItem->name} for completed project #{$req->request_id}");
+                } else {
+                    \Log::warning("Failed to allocate {$reqInvItem->quantity_requested} units of {$invItem->name} for project #{$req->request_id}");
+                }
+            }
+        }
+
         $req->update(['state' => 'DONE']);
 
         // Send notifications
@@ -385,6 +399,18 @@ class ApprovalController extends Controller
                 'state' => $newState,
                 'current_approver_id' => null
             ]);
+
+            // CRITICAL FIX: Release reserved inventory if project was in PROCESSING state
+            if ($locked->type === 'project' && $locked->state === 'PROCESSING') {
+                $inventoryItems = $locked->inventoryItems()->with('inventoryItem')->get();
+                foreach ($inventoryItems as $reqInvItem) {
+                    $invItem = $reqInvItem->inventoryItem;
+                    if ($invItem) {
+                        $invItem->release($reqInvItem->quantity_requested, $locked->id, $user->id);
+                        \Log::info("Released {$reqInvItem->quantity_requested} units of {$invItem->name} from rejected project #{$locked->request_id}");
+                    }
+                }
+            }
 
             DB::commit();
 

@@ -202,13 +202,70 @@ class UserSeeder extends Seeder
             $u->save();
         }
 
+        // ==========================================
+        // Sales Visit Management System Users
+        // ==========================================
+        
+        // Create or update Sales Admin
+        $salesAdmin = User::firstOrNew(['email' => 'admin@test.com']);
+        $isNew = !$salesAdmin->exists;
+        if ($isNew) {
+            $salesAdmin->password = Hash::make('password');
+        }
+        $salesAdmin->name = 'Sales Admin';
+        $salesAdmin->role = 'ADMIN';
+        $salesAdmin->status = 'active';
+        $salesAdmin->department_id = $marketingDept->id;
+        $salesAdmin->first_name = 'Sales';
+        $salesAdmin->last_name = 'Admin';
+        $salesAdmin->position = 'Sales Manager';
+        $salesAdmin->save();
+
+        // Create or update Sales Representative 1
+        $salesRep1 = User::firstOrNew(['email' => 'sales@test.com']);
+        $isNew = !$salesRep1->exists;
+        if ($isNew) {
+            $salesRep1->password = Hash::make('password');
+        }
+        $salesRep1->name = 'Ahmed Sales Rep';
+        $salesRep1->role = 'SALES_REP';
+        $salesRep1->status = 'active';
+        $salesRep1->team_id = $marketingTeam->id;
+        $salesRep1->department_id = $marketingDept->id;
+        $salesRep1->first_name = 'Ahmed';
+        $salesRep1->last_name = 'Sales';
+        $salesRep1->position = 'Sales Representative';
+        $salesRep1->save();
+
+        // Create or update Sales Representative 2
+        $salesRep2 = User::firstOrNew(['email' => 'sales2@test.com']);
+        $isNew = !$salesRep2->exists;
+        if ($isNew) {
+            $salesRep2->password = Hash::make('password');
+        }
+        $salesRep2->name = 'Mohamed Sales Rep';
+        $salesRep2->role = 'SALES_REP';
+        $salesRep2->status = 'active';
+        $salesRep2->team_id = $marketingTeam->id;
+        $salesRep2->department_id = $marketingDept->id;
+        $salesRep2->first_name = 'Mohamed';
+        $salesRep2->last_name = 'Sales';
+        $salesRep2->position = 'Sales Representative';
+        $salesRep2->save();
+
         $this->command->info('Users seeded successfully!');
-        $this->command->info('Demo accounts:');
+        $this->command->info('');
+        $this->command->info('=== SpendSwift Demo Accounts ===');
         $this->command->info('Admin: admin@spendswift.com / password123');
         $this->command->info('Final Manager: john.smith@spendswift.com / password123');
         $this->command->info('Direct Manager: sarah.johnson@spendswift.com / password123');
         $this->command->info('Accountant: lisa.chen@spendswift.com / password123');
-    $this->command->info('Accountant: omar.farid@spendswift.com / password123');
+        $this->command->info('Accountant: omar.farid@spendswift.com / password123');
         $this->command->info('User: mohamed.ali@spendswift.com / password123');
+        $this->command->info('');
+        $this->command->info('=== Sales Visit Management Accounts ===');
+        $this->command->info('Sales Admin: admin@test.com / password');
+        $this->command->info('Sales Rep 1: sales@test.com / password');
+        $this->command->info('Sales Rep 2: sales2@test.com / password');
     }
 }

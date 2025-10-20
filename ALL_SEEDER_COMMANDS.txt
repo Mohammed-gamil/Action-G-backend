@@ -1,0 +1,125 @@
+# ⚡ All Seeder Commands - Quick Reference
+
+## PowerShell Commands (Windows)
+
+### Complete Fresh Setup
+```powershell
+cd Action-G-backend; php artisan migrate:fresh; php artisan db:seed --class=SalesVisitSeeder; php artisan db:seed --class=UserSeeder
+```
+
+### Individual Seeders
+```powershell
+# Sales Data (Business Types + Product Categories)
+php artisan db:seed --class=SalesVisitSeeder
+
+# Users (Admin + Sales Reps)
+php artisan db:seed --class=UserSeeder
+
+# Test Users
+php artisan db:seed --class=TestUsersSeeder
+
+# Inventory
+php artisan db:seed --class=InventorySeeder
+
+# Departments
+php artisan db:seed --class=DepartmentSeeder
+
+# Teams
+php artisan db:seed --class=TeamSeeder
+```
+
+### Verify Data
+```powershell
+php artisan tinker --execute="echo 'Business Types: ' . App\Models\BusinessType::count() . PHP_EOL . 'Product Categories: ' . App\Models\ProductCategory::count() . PHP_EOL . 'Users: ' . App\Models\User::count() . PHP_EOL;"
+```
+
+---
+
+## Bash Commands (Linux/Mac)
+
+### Complete Fresh Setup
+```bash
+cd Action-G-backend && php artisan migrate:fresh && php artisan db:seed --class=SalesVisitSeeder && php artisan db:seed --class=UserSeeder
+```
+
+### Individual Seeders
+```bash
+# Sales Data
+php artisan db:seed --class=SalesVisitSeeder
+
+# Users
+php artisan db:seed --class=UserSeeder
+
+# Test Users
+php artisan db:seed --class=TestUsersSeeder
+
+# Inventory
+php artisan db:seed --class=InventorySeeder
+
+# Departments
+php artisan db:seed --class=DepartmentSeeder
+
+# Teams
+php artisan db:seed --class=TeamSeeder
+```
+
+### Verify Data
+```bash
+php artisan tinker --execute="echo 'Business Types: ' . App\Models\BusinessType::count() . PHP_EOL . 'Product Categories: ' . App\Models\ProductCategory::count() . PHP_EOL . 'Users: ' . App\Models\User::count() . PHP_EOL;"
+```
+
+---
+
+## Most Used Commands
+
+```bash
+# 1. Fresh start with sales data
+php artisan migrate:fresh
+php artisan db:seed --class=SalesVisitSeeder
+php artisan db:seed --class=UserSeeder
+
+# 2. Re-seed only sales data
+php artisan db:seed --class=SalesVisitSeeder
+
+# 3. Re-seed only users
+php artisan db:seed --class=UserSeeder
+
+# 4. Check counts
+php artisan tinker
+>>> App\Models\BusinessType::count()
+>>> App\Models\ProductCategory::count()
+>>> App\Models\User::where('role', 'SALES_REP')->get()
+>>> exit
+```
+
+---
+
+## Emergency Commands
+
+```bash
+# Nuclear reset (deletes everything)
+php artisan migrate:fresh --seed
+
+# Regenerate autoload if seeder not found
+composer dump-autoload
+
+# Clear all cache
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+```
+
+---
+
+## Copy-Paste Ready
+
+**PowerShell One-Liner (Complete Setup):**
+```powershell
+cd D:\VVideos\Action-g\Action-g\Action-G-backend; php artisan migrate:fresh; php artisan db:seed --class=SalesVisitSeeder; php artisan db:seed --class=UserSeeder; php artisan tinker --execute="echo 'Setup Complete!' . PHP_EOL . 'Business Types: ' . App\Models\BusinessType::count() . PHP_EOL . 'Product Categories: ' . App\Models\ProductCategory::count() . PHP_EOL . 'Users: ' . App\Models\User::count() . PHP_EOL;"
+```
+
+**Bash One-Liner (Complete Setup):**
+```bash
+cd ~/Action-G-backend && php artisan migrate:fresh && php artisan db:seed --class=SalesVisitSeeder && php artisan db:seed --class=UserSeeder && php artisan tinker --execute="echo 'Setup Complete!' . PHP_EOL . 'Business Types: ' . App\Models\BusinessType::count() . PHP_EOL . 'Product Categories: ' . App\Models\ProductCategory::count() . PHP_EOL . 'Users: ' . App\Models\User::count() . PHP_EOL;"
+```

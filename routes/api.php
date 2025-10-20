@@ -97,6 +97,38 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::delete('{id}', [\App\Http\Controllers\Api\InventoryController::class, 'destroy']);
     });
 
+    // Sales Visits routes
+    Route::group(['prefix' => 'visits'], function () {
+        // Export routes (must be before /{id} to avoid route collision)
+        Route::get('export/excel', [\App\Http\Controllers\Api\VisitController::class, 'exportExcel']);
+        Route::get('export/pdf', [\App\Http\Controllers\Api\VisitController::class, 'exportPdf']);
+        
+        // Statistics (must be before /{id})
+        Route::get('stats', [\App\Http\Controllers\Api\VisitController::class, 'getStats']);
+        
+        // Client management (must be before /{id})
+        Route::get('clients/search', [\App\Http\Controllers\Api\VisitController::class, 'searchClients']);
+        Route::get('clients', [\App\Http\Controllers\Api\VisitController::class, 'getClients']);
+        Route::post('clients', [\App\Http\Controllers\Api\VisitController::class, 'createClient']);
+        
+        // Reference data (must be before /{id})
+        Route::get('business-types', [\App\Http\Controllers\Api\VisitController::class, 'getBusinessTypes']);
+        Route::get('product-categories', [\App\Http\Controllers\Api\VisitController::class, 'getProductCategories']);
+        
+        // Visits CRUD
+        Route::get('/', [\App\Http\Controllers\Api\VisitController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\VisitController::class, 'store']);
+        Route::get('{id}', [\App\Http\Controllers\Api\VisitController::class, 'show']);
+        Route::put('{id}', [\App\Http\Controllers\Api\VisitController::class, 'update']);
+        Route::post('{id}/status', [\App\Http\Controllers\Api\VisitController::class, 'updateStatus']);
+        Route::post('{id}/notes', [\App\Http\Controllers\Api\VisitController::class, 'addNotes']);
+        Route::get('{id}/history', [\App\Http\Controllers\Api\VisitController::class, 'getHistory']);
+        
+        // File uploads
+        Route::post('{id}/files', [\App\Http\Controllers\Api\VisitController::class, 'uploadFile']);
+        Route::delete('{id}/files/{fileId}', [\App\Http\Controllers\Api\VisitController::class, 'deleteFile']);
+    });
+
     // Approval routes
     Route::group(['prefix' => 'approvals'], function () {
         Route::post('{requestId}/approve', [ApprovalController::class, 'approve']);
