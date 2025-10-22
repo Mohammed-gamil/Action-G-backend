@@ -33,5 +33,20 @@ class DatabaseSeeder extends Seeder
         if ($current < $desired) {
             User::factory()->count($desired - $current)->create();
         }
+
+        // Seed departments and teams
+        $this->call([
+            DepartmentSeeder::class,
+            TeamSeeder::class,
+        ]);
+
+        // Seed inventory items
+        $this->call(InventorySeeder::class);
+
+        // Seed sales visit data (clients, business types, sample visits)
+        $this->call([
+            SalesVisitSeeder::class,
+            SampleVisitsSeeder::class,
+        ]);
     }
 }

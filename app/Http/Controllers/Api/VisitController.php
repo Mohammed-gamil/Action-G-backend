@@ -107,20 +107,12 @@ class VisitController extends Controller
         $validator = Validator::make($request->all(), [
             'client_id' => 'required|exists:tbl_clients,id',
             'visit_date' => 'required|date',
-            'has_previous_agency' => 'boolean',
-            'previous_agency_name' => 'nullable|string|max:200',
-            'needs_voiceover' => 'boolean',
-            'voiceover_language' => 'nullable|string|max:50',
-            'shooting_goals' => 'nullable|array',
-            'shooting_goals_other_text' => 'nullable|string',
-            'service_types' => 'nullable|array',
-            'service_types_other_text' => 'nullable|string',
-            'preferred_location' => 'nullable|in:client_location,action_studio,external',
-            'product_category_id' => 'nullable|exists:tbl_product_categories,id',
-            'product_description' => 'nullable|string',
-            'estimated_product_count' => 'nullable|integer|min:1',
-            'preferred_shoot_date' => 'nullable|date',
-            'budget_range' => 'nullable|string|max:100',
+            'visit_type' => 'nullable|string|max:50',
+            'visit_result' => 'nullable|string|max:50',
+            'visit_reason' => 'nullable|string|max:50',
+            'follow_up_date' => 'nullable|date',
+            'location_lat' => 'nullable|numeric|between:-90,90',
+            'location_lng' => 'nullable|numeric|between:-180,180',
             'rep_notes' => 'nullable|string',
         ]);
 
@@ -181,20 +173,12 @@ class VisitController extends Controller
         $validator = Validator::make($request->all(), [
             'client_id' => 'sometimes|exists:tbl_clients,id',
             'visit_date' => 'sometimes|date',
-            'has_previous_agency' => 'boolean',
-            'previous_agency_name' => 'nullable|string|max:200',
-            'needs_voiceover' => 'boolean',
-            'voiceover_language' => 'nullable|string|max:50',
-            'shooting_goals' => 'nullable|array',
-            'shooting_goals_other_text' => 'nullable|string',
-            'service_types' => 'nullable|array',
-            'service_types_other_text' => 'nullable|string',
-            'preferred_location' => 'nullable|in:client_location,action_studio,external',
-            'product_category_id' => 'nullable|exists:tbl_product_categories,id',
-            'product_description' => 'nullable|string',
-            'estimated_product_count' => 'nullable|integer|min:1',
-            'preferred_shoot_date' => 'nullable|date',
-            'budget_range' => 'nullable|string|max:100',
+            'visit_type' => 'nullable|string|max:50',
+            'visit_result' => 'nullable|string|max:50',
+            'visit_reason' => 'nullable|string|max:50',
+            'follow_up_date' => 'nullable|date',
+            'location_lat' => 'nullable|numeric|between:-90,90',
+            'location_lng' => 'nullable|numeric|between:-180,180',
             'rep_notes' => 'nullable|string',
             'admin_notes' => 'nullable|string',
         ]);
@@ -241,10 +225,9 @@ class VisitController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:draft,submitted,pending_review,action_required,approved,quotation_sent,closed_won,closed_lost',
+            'status' => 'required|in:draft,submitted,completed',
             'notes' => 'nullable|string',
             'admin_notes' => 'nullable|string',
-            'action_required_message' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -262,17 +245,10 @@ class VisitController extends Controller
         if ($request->has('admin_notes')) {
             $visit->admin_notes = $request->admin_notes;
         }
-        if ($request->has('action_required_message')) {
-            $visit->action_required_message = $request->action_required_message;
-        }
 
-        // Set timestamps for specific statuses
+        // Set timestamp for submitted status
         if ($newStatus === 'submitted' && !$visit->submitted_at) {
             $visit->submitted_at = now();
-        }
-        if ($newStatus === 'approved' && !$visit->approved_at) {
-            $visit->approved_at = now();
-            $visit->approved_by_admin_id = $user->id;
         }
 
         $visit->save();
@@ -404,11 +380,7 @@ class VisitController extends Controller
         $total = $query->count();
         $draft = (clone $query)->where('status', 'draft')->count();
         $submitted = (clone $query)->where('status', 'submitted')->count();
-        $pendingReview = (clone $query)->where('status', 'pending_review')->count();
-        $approved = (clone $query)->where('status', 'approved')->count();
-        $quotationSent = (clone $query)->where('status', 'quotation_sent')->count();
-        $closedWon = (clone $query)->where('status', 'closed_won')->count();
-        $closedLost = (clone $query)->where('status', 'closed_lost')->count();
+        $completed = (clone $query)->where('status', 'completed')->count();
 
         // This week
         $thisWeek = (clone $query)->where('visit_date', '>=', now()->startOfWeek())->count();
@@ -422,11 +394,7 @@ class VisitController extends Controller
                 'total' => $total,
                 'draft' => $draft,
                 'submitted' => $submitted,
-                'pending_review' => $pendingReview,
-                'approved' => $approved,
-                'quotation_sent' => $quotationSent,
-                'closed_won' => $closedWon,
-                'closed_lost' => $closedLost,
+                'completed' => $completed,
                 'this_week' => $thisWeek,
                 'this_month' => $thisMonth,
             ],
@@ -574,6 +542,7 @@ class VisitController extends Controller
         $validator = Validator::make($request->all(), [
             'store_name' => 'required|string|max:200',
             'contact_person' => 'required|string|max:100',
+            'email' => 'nullable|email|max:100',
             'mobile' => 'required|string|max:20',
             'mobile_2' => 'nullable|string|max:20',
             'address' => 'required|string',
@@ -742,12 +711,7 @@ class VisitController extends Controller
         $statusMap = [
             'draft' => 'مسودة',
             'submitted' => 'مُرسلة',
-            'pending_review' => 'قيد المراجعة',
-            'action_required' => 'يتطلب إجراء',
-            'approved' => 'موافق عليها',
-            'quotation_sent' => 'تم إرسال العرض',
-            'closed_won' => 'مغلقة - فوز',
-            'closed_lost' => 'مغلقة - خسارة',
+            'completed' => 'مكتملة',
         ];
 
         $html = '<!DOCTYPE html>

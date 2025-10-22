@@ -31,14 +31,23 @@ class NotificationController extends Controller
         // Transform to match frontend format
         $items = collect($notifications->items())->map(function ($notification) {
             $data = json_decode($notification->data, true);
-            
+
             return [
+                // Keep raw DB fields for maximum compatibility with frontend expectations
                 'id' => $notification->id,
+                'type' => $notification->type,
+                'notifiable_type' => $notification->notifiable_type,
+                'notifiable_id' => $notification->notifiable_id,
+                'data' => $data,
+                'read_at' => $notification->read_at,
+                'created_at' => $notification->created_at,
+                'updated_at' => $notification->updated_at,
+
+                // Convenience fields for UI
                 'title' => $this->getNotificationTitle($notification->type),
                 'message' => $data['message'] ?? '',
-                'type' => $this->getNotificationType($notification->type),
+                'ui_type' => $this->getNotificationType($notification->type),
                 'read' => $notification->read_at !== null,
-                'created_at' => $notification->created_at,
                 'related_request_id' => $data['request_id'] ?? null,
                 'action_url' => $data['action_url'] ?? null,
             ];
@@ -104,8 +113,10 @@ class NotificationController extends Controller
             ->whereNull('read_at')
             ->count();
 
+        // Return both a backward-compatible top-level 'unread' and a data.count object
         return response()->json([
             'success' => true,
+            'unread' => $count,
             'data' => [ 'count' => $count ],
         ]);
     }
@@ -151,5 +162,21 @@ class NotificationController extends Controller
         return response()->json([
             'success' => (bool) $deleted,
         ], $deleted ? 200 : 404);
+    }
+
+    /**
+     * Debug helper: create a test notification for the current user
+     */
+    public function debugCreate(): JsonResponse
+    {
+        $user = Auth::user();
+
+        // Create a simple test notification
+        \App\Services\NotificationService::create($user, 'debug_notification', [
+            'message' => 'This is a test notification created at ' . now()->toDateTimeString(),
+            'action_url' => '/'
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Debug notification created']);
     }
 }

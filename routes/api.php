@@ -62,6 +62,8 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::put('read-all', [NotificationController::class, 'markAllAsRead']);
         Route::put('{id}/read', [NotificationController::class, 'markAsRead']);
         Route::delete('{id}', [NotificationController::class, 'destroy']);
+        // Debug route (protected) to create a notification for current user
+        Route::post('debug-create', [NotificationController::class, 'debugCreate']);
     });
 
     // Request routes
@@ -95,6 +97,34 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::put('{id}', [\App\Http\Controllers\Api\InventoryController::class, 'update']);
         Route::post('{id}/adjust', [\App\Http\Controllers\Api\InventoryController::class, 'adjustQuantity']);
         Route::delete('{id}', [\App\Http\Controllers\Api\InventoryController::class, 'destroy']);
+    });
+
+    // Inventory Requests routes
+    Route::group(['prefix' => 'inventory-requests'], function () {
+        Route::get('/', [\App\Http\Controllers\Api\InventoryRequestController::class, 'index']);
+        Route::get('{id}/download', [\App\Http\Controllers\Api\InventoryRequestController::class, 'downloadPdf']);
+        Route::get('{id}/download-return', [\App\Http\Controllers\Api\InventoryRequestController::class, 'downloadReturnReceipt']);
+        Route::post('/', [\App\Http\Controllers\Api\InventoryRequestController::class, 'store']);
+        Route::get('stats', [\App\Http\Controllers\Api\InventoryRequestController::class, 'getStats']);
+        Route::get('{id}', [\App\Http\Controllers\Api\InventoryRequestController::class, 'show']);
+        Route::put('{id}', [\App\Http\Controllers\Api\InventoryRequestController::class, 'update']);
+        Route::post('{id}/submit', [\App\Http\Controllers\Api\InventoryRequestController::class, 'submit']);
+        Route::post('{id}/status', [\App\Http\Controllers\Api\InventoryRequestController::class, 'updateStatus']);
+        Route::post('{id}/return', [\App\Http\Controllers\Api\InventoryRequestController::class, 'recordReturn']);
+        Route::delete('{id}', [\App\Http\Controllers\Api\InventoryRequestController::class, 'destroy']);
+    });
+
+    // Studio Bookings routes
+    Route::group(['prefix' => 'studio-bookings'], function () {
+        Route::get('/', [\App\Http\Controllers\Api\StudioBookingController::class, 'index']);
+        Route::get('{id}/download', [\App\Http\Controllers\Api\StudioBookingController::class, 'downloadPdf']);
+        Route::post('/', [\App\Http\Controllers\Api\StudioBookingController::class, 'store']);
+        Route::get('stats', [\App\Http\Controllers\Api\StudioBookingController::class, 'getStats']);
+        Route::get('{id}', [\App\Http\Controllers\Api\StudioBookingController::class, 'show']);
+        Route::put('{id}', [\App\Http\Controllers\Api\StudioBookingController::class, 'update']);
+        Route::post('{id}/submit', [\App\Http\Controllers\Api\StudioBookingController::class, 'submit']);
+        Route::post('{id}/status', [\App\Http\Controllers\Api\StudioBookingController::class, 'updateStatus']);
+        Route::delete('{id}', [\App\Http\Controllers\Api\StudioBookingController::class, 'destroy']);
     });
 
     // Sales Visits routes
