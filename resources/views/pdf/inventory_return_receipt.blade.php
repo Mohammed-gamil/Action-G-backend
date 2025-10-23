@@ -4,123 +4,76 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>استلام معدات التصوير بعد العودة - {{ $request->request_id }}</title>
-  <style>
-    @font-face {
-      font-family: 'DejaVu Sans';
-      src: url('/fonts/DejaVuSans.ttf') format('truetype');
-    }
-    body {
-      font-family: 'DejaVu Sans', Arial, sans-serif;
-      font-size: 11px;
-      color: #222;
-      direction: rtl;
-      text-align: right;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #4F46E5;
-      padding-bottom: 10px;
-    }
-    .header h1 {
-      font-size: 18px;
-      margin: 0 0 5px 0;
-      color: #4F46E5;
-    }
-    .header h2 {
-      font-size: 14px;
-      margin: 0;
-      color: #6B7280;
-    }
-    .section {
-      margin-bottom: 15px;
-      padding: 10px;
-      border: 1px solid #E5E7EB;
-      border-radius: 5px;
-    }
-    .section-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #4F46E5;
-      margin-bottom: 8px;
-      border-bottom: 1px solid #E5E7EB;
-      padding-bottom: 5px;
-    }
-    .field {
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .field-label {
-      font-weight: 700;
-      color: #374151;
-      width: 35%;
-    }
-    .field-value {
-      color: #6B7280;
-      width: 63%;
-      text-align: left;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      padding: 8px 6px;
-      border: 1px solid #D1D5DB;
-      text-align: right;
-    }
-    th {
-      background-color: #F3F4F6;
-      font-weight: 700;
-      font-size: 11px;
-      color: #374151;
-    }
-    td {
-      font-size: 10px;
-      color: #6B7280;
-    }
-    .status-badge {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 700;
-    }
-    .status-excellent { background-color: #D1FAE5; color: #065F46; }
-    .status-cleaning { background-color: #FEF3C7; color: #92400E; }
-    .status-maintenance { background-color: #FED7AA; color: #9A3412; }
-    .status-damaged { background-color: #FEE2E2; color: #991B1B; }
-    .footer {
-      margin-top: 30px;
-      padding-top: 15px;
-      border-top: 1px solid #E5E7EB;
-      font-size: 10px;
-      color: #9CA3AF;
-      text-align: center;
-    }
-    .signature-box {
-      margin-top: 20px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .signature {
-      width: 45%;
-      padding: 10px;
-      border: 1px dashed #D1D5DB;
-      text-align: center;
-    }
-    .signature-title {
-      font-weight: 700;
-      margin-bottom: 30px;
-    }
-    .signature-line {
-      border-top: 1px solid #374151;
-      margin-top: 30px;
-      padding-top: 5px;
-    }
-  </style>
+<style>
+  /* Fonts */
+  @font-face {
+    font-family: 'Cairo';
+    src: url('{{ public_path('fonts/Cairo-Regular.ttf') }}') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Cairo';
+    src: url('{{ public_path('fonts/Cairo-Bold.ttf') }}') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Amiri';
+    src: url('{{ public_path('vendor/gpdf/fonts/Amiri-Regular.ttf') }}') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Amiri';
+    src: url('{{ public_path('vendor/gpdf/fonts/Amiri-Bold.ttf') }}') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+  }
+
+  /* Base */
+  body { font-family: 'Cairo','Amiri','DejaVu Sans', Arial, sans-serif; font-size: 12px; color:#111827; direction: rtl; unicode-bidi: embed; text-align: right; }
+  h1, h2, h3, p, span, td, th, label, strong { direction: rtl; unicode-bidi: embed; }
+
+  /* Header like Visit print */
+  .header { background:#1d4ed8; background: linear-gradient(to left, #2563eb, #1d4ed8); color:#fff; padding:16px 20px; margin-bottom:20px; border-radius:8px; text-align:center }
+  .header h1 { font-size:20px; margin:0 0 6px 0 }
+  .header h2, .header p { margin:0; font-size:13px; color:#eef2ff }
+
+  /* Sections */
+  .section { margin-bottom:16px; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px; background:#f9fafb }
+  .section-title { font-size:14px; font-weight:700; margin-bottom:8px; color:#1f2937 }
+
+  /* Fields */
+  .field { margin-bottom:8px }
+  .field-label { display:inline-block; min-width:160px; font-weight:700; color:#374151 }
+  .field-value { display:inline-block; color:#111827 }
+
+  /* Table */
+  table { width:100%; border-collapse: collapse; direction: rtl; unicode-bidi: embed }
+  th { background:#1d4ed8; color:#fff; padding:8px 10px; text-align:center; font-weight:700 }
+  td { border:1px solid #e5e7eb; padding:8px 10px; text-align:center }
+  tbody tr:nth-child(even) { background:#f9fafb }
+
+  /* Status badges for condition */
+  .status-badge { display:inline-block; padding:4px 10px; border-radius:9999px; font-size:11px; font-weight:700 }
+  .status-excellent { background:#d1fae5; color:#065f46 }
+  .status-cleaning { background:#fef3c7; color:#92400e }
+  .status-maintenance { background:#fee2e2; color:#991b1b }
+  .status-damaged { background:#fee2e2; color:#991b1b }
+
+  /* Signatures */
+  .signature-box { display: table; width: 100%; margin-top: 20px }
+  .signature { display: table-cell; width: 50%; padding: 10px; text-align: center }
+  .signature-title { font-weight:700; margin-bottom: 8px }
+  .signature-line { border-top:1px solid #000; margin-top: 24px; padding-top: 4px }
+
+  /* Footer */
+  .footer { margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb; text-align: center; color:#6b7280; font-size: 11px }
+
+  /* LTR helper */
+  .ltr-text { direction:ltr; text-align:left; unicode-bidi: bidi-override }
+</style>
 </head>
 <body>
   <div class="header">

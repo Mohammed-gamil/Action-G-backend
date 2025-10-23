@@ -580,15 +580,19 @@ class InventoryRequestController extends Controller
         }
     }
 
-    public function downloadPdf($id)
+    /**
+     * Get inventory request print data (JSON) - for frontend printing like visit details
+     * No longer generates PDF - frontend will handle printing via window.print()
+     */
+    public function getPrintData($id)
     {
         try {
             $inventoryRequest = InventoryRequest::with(['requester', 'directManager', 'warehouseManager', 'items.inventoryItem'])->findOrFail($id);
 
-            $pdf = app('dompdf.wrapper');
-            $pdf->loadView('pdf.inventory_request', ['request' => $inventoryRequest]);
-
-            return $pdf->stream('inventory_request_' . $inventoryRequest->request_id . '.pdf');
+            return response()->json([
+                'success' => true,
+                'data' => $inventoryRequest
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -597,7 +601,11 @@ class InventoryRequestController extends Controller
         }
     }
 
-    public function downloadReturnReceipt($id)
+    /**
+     * Get return receipt print data (JSON) - for frontend printing
+     * No longer generates PDF - frontend will handle printing via window.print()
+     */
+    public function getReturnReceiptPrintData($id)
     {
         try {
             $inventoryRequest = InventoryRequest::with(['requester', 'directManager', 'warehouseManager', 'items.inventoryItem'])->findOrFail($id);
@@ -610,16 +618,28 @@ class InventoryRequestController extends Controller
                 ], 422);
             }
 
-            $pdf = app('dompdf.wrapper');
-            $pdf->loadView('pdf.inventory_return_receipt', ['request' => $inventoryRequest]);
-            $pdf->setPaper('a4', 'portrait');
-
-            return $pdf->stream('return_receipt_' . $inventoryRequest->request_id . '.pdf');
+            return response()->json([
+                'success' => true,
+                'data' => $inventoryRequest
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'error' => ['message' => $e->getMessage()]
             ], 500);
         }
+    }
+    
+    // Keep old methods for backward compatibility (can be removed later)
+    public function downloadPdf($id)
+    {
+        // Redirect to the new print approach
+        return $this->getPrintData($id);
+    }
+
+    public function downloadReturnReceipt($id)
+    {
+        // Redirect to the new print approach
+        return $this->getReturnReceiptPrintData($id);
     }
 }

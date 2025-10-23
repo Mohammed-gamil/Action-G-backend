@@ -296,21 +296,32 @@ class StudioBookingController extends Controller
         }
     }
 
-    public function downloadPdf($id)
+    /**
+     * Get studio booking print data (JSON) - for frontend printing like visit details
+     * No longer generates PDF - frontend will handle printing via window.print()
+     */
+    public function getPrintData($id)
     {
         try {
             $booking = StudioBooking::with(['requester', 'directManager'])->findOrFail($id);
 
-            $pdf = app('dompdf.wrapper');
-            $pdf->loadView('pdf.studio_booking', ['booking' => $booking]);
-
-            return $pdf->stream('studio_booking_' . $booking->request_id . '.pdf');
+            return response()->json([
+                'success' => true,
+                'data' => $booking
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'error' => ['message' => $e->getMessage()]
             ], 500);
         }
+    }
+
+    // Keep old method for backward compatibility (can be removed later)
+    public function downloadPdf($id)
+    {
+        // Redirect to the new print approach
+        return $this->getPrintData($id);
     }
 
     public function getStats()
